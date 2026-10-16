@@ -1,0 +1,32 @@
+Package: pertEvalR
+Type: Package
+Title: Calibrated Evaluation of Single-Cell Perturbation Response Predictions
+Version: 0.0.0.9000
+Authors@R:
+    person("First", "Last", email = "you@example.org",
+           role = c("aut", "cre"))
+Description: A framework for evaluating models that predict transcriptional
+    responses to genetic or chemical perturbations from single-cell data
+    (for example Perturb-seq). Provides standard data splits, simple
+    reference baselines (control and training-mean predictions), and is
+    designed to grow into calibrated metrics, signal diagnostics and
+    statistical comparison of models.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
+Imports:
+    Matrix,
+    methods,
+    stats,
+    utils
+Suggests:
+    SeuratObject (>= 5.0.0),
+    SingleCellExperiment,
+    SummarizedExperiment,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/YOUR-GITHUB/pertEvalR
+BugReports: https://github.com/YOUR-GITHUB/pertEvalR/issues
+Config/roxygen2/version: 8.1.1
