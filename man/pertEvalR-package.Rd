@@ -28,11 +28,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{you@example.org}
+\strong{Maintainer}: Chaoya Wang \email{wanchaoya3@gmail.com}
 
 Authors:
 \itemize{
-  \item First Last \email{you@example.org}
+  \item Chaoya Wang \email{wanchaoya3@gmail.com}
 }
 
 }

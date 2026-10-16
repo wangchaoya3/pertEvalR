@@ -44,8 +44,10 @@ afterwards.}
 \value{
 A \code{pe_data} object with control label \code{"control"}, single
 perturbations named \code{P1}, \code{P2}, ... and combinations such as \code{"P1+P2"}.
-The simulated truth is stored in the extra element \code{sim} (a list with
-\code{baseline}, \code{shared} and the genes x perturbations matrix \code{effects}).
+The simulated truth is stored in the extra element \code{sim}, a list with
+\code{baseline}, \code{shared}, the genes x perturbations matrix \code{effects}, and
+\code{targets}, a named vector giving each single perturbation's target gene
+(suitable for the \code{targets} argument of \code{\link[=baseline_linear]{baseline_linear()}}).
 }
 \description{
 Generates log-scale expression for control cells, single-gene
@@ -59,6 +61,9 @@ systematic shift applied to every perturbed (non-control) cell, and the
 effect of a combination is the sum of its components' effects. Raising
 \code{shared_effect} relative to \code{effect_sd} mimics datasets with strong
 systematic variation, where the mean baseline looks deceptively good.
+
+Each single perturbation knocks down its own target gene (an effect of
+\code{-2 * effect_sd}) in addition to changing \code{n_affected} random genes.
 }
 \examples{
 x <- pe_simulate(seed = 1)

@@ -4,26 +4,44 @@
 \alias{baselines}
 \alias{baseline_control}
 \alias{baseline_mean}
+\alias{baseline_additive}
+\alias{baseline_linear}
 \title{Reference baselines for perturbation prediction}
 \usage{
 baseline_control(x, split)
 
 baseline_mean(x, split)
+
+baseline_additive(x, split)
+
+baseline_linear(x, split, n_comp = 10, ridge = 0.1, targets = NULL)
 }
 \arguments{
 \item{x}{A \code{pe_data} object.}
 
 \item{split}{A \code{pe_split} object created from \code{x}.}
+
+\item{n_comp}{For \code{baseline_linear()}: number of principal components used
+as gene embeddings (capped at the number of training perturbations
+minus one).}
+
+\item{ridge}{For \code{baseline_linear()}: ridge penalty, a non-negative number.}
+
+\item{targets}{For \code{baseline_linear()}: a named character vector mapping
+each perturbation label to its target gene (a row name of \code{x$expr}).
+By default the label itself is taken to be the target gene, as is usual
+for CRISPR screens labelled by gene symbol. For \code{\link[=pe_simulate]{pe_simulate()}} data use
+\code{x$sim$targets}.}
 }
 \value{
-A \code{pe_prediction} object: a list with \code{pred} (a genes x
-test-perturbations matrix, with the same layout as \code{\link[=pe_truth]{pe_truth()}}),
-\code{method} and \code{split}.
+A \code{pe_prediction} object (see \code{\link[=pe_prediction]{pe_prediction()}}) whose \code{pred}
+element is a genes x held-out-perturbations matrix laid out like
+\code{\link[=pe_truth]{pe_truth()}}.
 }
 \description{
-Uninformative baselines that any useful model should beat. Reporting them
+Simple baselines that any useful model should beat. Reporting them
 alongside a model is essential: recent benchmarks have shown that common
-metrics can rank these baselines close to, or above, complex models.
+metrics can rank such baselines close to, or above, complex models.
 }
 \details{
 \itemize{
@@ -35,19 +53,37 @@ of the training perturbations' pseudobulk profiles (each perturbation
 weighted equally, regardless of its number of cells). It captures
 systematic differences shared by perturbed cells, but nothing
 perturbation-specific.
+\item \code{baseline_additive()} predicts a \strong{combination} as the control profile
+plus the sum of its components' changes from control, each measured as a
+single perturbation in training. It needs an \code{"unseen_combo"} split.
+\item \code{baseline_linear()} is the \strong{linear model} of Ahlmann-Eltze, Huber and
+Anders (Nat Methods 2025) for unseen single perturbations. Gene
+embeddings \code{G} are the top principal components of the centred training
+pseudobulk matrix \code{Y}; each perturbation is represented by the embedding
+of its target gene; and \code{Y} is modelled as
+\verb{b + G W t(P)} with the ridge solution
+\verb{W = (t(G) G + ridge I)^-1 t(G) (Y - b) P (t(P) P + ridge I)^-1},
+where \code{b} is the row mean of \code{Y}. As \code{ridge} grows the prediction tends
+to \code{b}, the mean of the training single perturbations.
 }
 
-Neither baseline varies between held-out perturbations, so both score
-zero on any metric that asks whether predictions tell perturbations apart.
+\code{baseline_control()} and \code{baseline_mean()} make the same prediction for
+every held-out perturbation, so they score at chance level (0.5 on
+average) on the perturbation discrimination score of \code{\link[=pe_evaluate]{pe_evaluate()}}.
 }
 \examples{
 x <- pe_simulate(seed = 1)
-s <- pe_split(x, seed = 1)
-p_ctrl <- baseline_control(x, s)
-p_mean <- baseline_mean(x, s)
-truth <- pe_truth(x, s)
 
-# Mean squared error of each baseline on the held-out perturbations
-mean((p_ctrl$pred - truth)^2)
-mean((p_mean$pred - truth)^2)
+# Unseen single perturbations
+s <- pe_split(x, seed = 1)
+preds <- list(
+  baseline_control(x, s),
+  baseline_mean(x, s),
+  baseline_linear(x, s, targets = x$sim$targets)
+)
+pe_summary(pe_evaluate(preds, x, metrics = c("mse", "pearson_delta_pert")))
+
+# Unseen combinations
+s2 <- pe_split(x, type = "unseen_combo", seed = 1)
+pe_summary(pe_evaluate(baseline_additive(x, s2), x, metrics = "mse"))
 }

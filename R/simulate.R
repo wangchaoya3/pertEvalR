@@ -11,6 +11,9 @@
 #' `shared_effect` relative to `effect_sd` mimics datasets with strong
 #' systematic variation, where the mean baseline looks deceptively good.
 #'
+#' Each single perturbation knocks down its own target gene (an effect of
+#' `-2 * effect_sd`) in addition to changing `n_affected` random genes.
+#'
 #' @param n_genes Number of genes.
 #' @param n_single Number of single-gene perturbations.
 #' @param n_combo Number of two-gene combinations (at most
@@ -27,8 +30,10 @@
 #'
 #' @return A `pe_data` object with control label `"control"`, single
 #'   perturbations named `P1`, `P2`, ... and combinations such as `"P1+P2"`.
-#'   The simulated truth is stored in the extra element `sim` (a list with
-#'   `baseline`, `shared` and the genes x perturbations matrix `effects`).
+#'   The simulated truth is stored in the extra element `sim`, a list with
+#'   `baseline`, `shared`, the genes x perturbations matrix `effects`, and
+#'   `targets`, a named vector giving each single perturbation's target gene
+#'   (suitable for the `targets` argument of [baseline_linear()]).
 #' @export
 #' @examples
 #' x <- pe_simulate(seed = 1)
@@ -46,6 +51,9 @@ pe_simulate <- function(n_genes = 200, n_single = 20, n_combo = 10,
   if (n_affected > n_genes) {
     stop("`n_affected` cannot exceed `n_genes`.", call. = FALSE)
   }
+  if (n_single > n_genes) {
+    stop("`n_single` cannot exceed `n_genes`.", call. = FALSE)
+  }
   with_seed(seed, simulate_impl(
     n_genes, n_single, n_combo, cells_per_pert, n_control,
     n_affected, effect_sd, shared_effect, noise_sd
@@ -61,10 +69,14 @@ simulate_impl <- function(n_genes, n_single, n_combo, cells_per_pert,
   baseline <- stats::rnorm(n_genes, mean = 2, sd = 1)
   shared <- stats::rnorm(n_genes, mean = 0, sd = shared_effect)
 
+  # Each single perturbation knocks down one distinct target gene and changes
+  # `n_affected` other randomly chosen genes.
+  target_idx <- sample.int(n_genes, n_single)
   single_eff <- matrix(0, n_genes, n_single, dimnames = list(genes, singles))
   for (j in seq_len(n_single)) {
     hit <- sample.int(n_genes, n_affected)
     single_eff[hit, j] <- stats::rnorm(n_affected, mean = 0, sd = effect_sd)
+    single_eff[target_idx[j], j] <- -2 * effect_sd
   }
 
   combo_names <- character(0)
@@ -94,6 +106,7 @@ simulate_impl <- function(n_genes, n_single, n_combo, cells_per_pert,
   out <- pe_data(expr, labels, control = "control", combo_sep = "+")
   out$sim <- list(baseline = stats::setNames(baseline, genes),
                   shared = stats::setNames(shared, genes),
-                  effects = effects)
+                  effects = effects,
+                  targets = stats::setNames(genes[target_idx], singles))
   out
 }

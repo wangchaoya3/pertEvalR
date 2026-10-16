@@ -33,12 +33,20 @@ library(pertEvalR)
 x <- pe_simulate(seed = 1)          # or pe_data(expr, labels) / as_pe_data(sce, ...)
 s <- pe_split(x, type = "unseen_single", seed = 42)
 
-truth  <- pe_truth(x, s)            # observed pseudobulk of held-out perturbations
-p_ctrl <- baseline_control(x, s)    # "no change"
-p_mean <- baseline_mean(x, s)       # average training response
+preds <- list(
+  baseline_control(x, s),                          # "no change"
+  baseline_mean(x, s),                             # average training response
+  baseline_linear(x, s, targets = x$sim$targets)   # Ahlmann-Eltze linear model
+)
+res <- pe_evaluate(preds, x)        # one row per method x perturbation x metric
+pe_summary(res)
+```
 
-mean((p_ctrl$pred - truth)^2)
-mean((p_mean$pred - truth)^2)
+Combinations use their own split and the additive baseline:
+
+```r
+s2 <- pe_split(x, type = "unseen_combo", seed = 42)
+pe_summary(pe_evaluate(baseline_additive(x, s2), x))
 ```
 
 From a `SingleCellExperiment` or a Seurat v5 object:
@@ -48,8 +56,9 @@ x <- as_pe_data(sce, perturbation_col = "target_gene", control = "non-targeting"
 x <- as_pe_data(seu, perturbation_col = "target_gene", control = "non-targeting")
 ```
 
-Predictions from your own model only need to be a genes x held-out
-perturbations matrix laid out like `pe_truth(x, s)`.
+Predictions from your own model: wrap a genes x held-out perturbations
+matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
+`pe_evaluate()`.
 
 ## What is implemented
 
@@ -58,17 +67,18 @@ perturbations matrix laid out like `pe_truth(x, s)`.
 | Data | `pe_data()`, `as_pe_data()` (matrix, SCE, Seurat v5) | done |
 | Data | `pe_pseudobulk()`, `pe_truth()`, `pe_perturbations()` | done |
 | Data | `pe_split()` — `unseen_single`, `unseen_combo` | done |
-| Data | `pe_simulate()` — toy data with known effects | done |
-| Baselines | `baseline_control()`, `baseline_mean()` | done |
+| Data | `pe_simulate()` — toy data with known effects and targets | done |
+| Baselines | `baseline_control()`, `baseline_mean()`, `baseline_additive()`, `baseline_linear()` | done |
+| Predictions | `pe_prediction()` — wrap any model's output | done |
+| Metrics | `pe_evaluate()`: MSE (all / top-n genes), PearsonΔ vs control (all / top-n), PearsonΔ vs perturbed centroid, PDS (L1 / L2 / cosine); `pe_summary()` | done |
 
 ## Roadmap
 
 | Layer | Planned | Notes |
 |---|---|---|
 | Data | `unseen_cell_line` split; h5ad import via `zellkonverter` | |
-| Baselines | `baseline_additive()`, `baseline_linear()` | linear model after Ahlmann-Eltze et al. (Nat Methods 2025) |
 | Baselines | `baseline_linear_prior()` | external gene embeddings, e.g. STRING |
-| Metrics | MSE/MAE (+ DEG-weighted), PearsonΔ vs control and vs perturbed centroid, PDS, DE overlap/precision/direction, energy distance, MMD | centroid reference follows Systema (Nat Biotech 2025) |
+| Metrics | MAE, DEG-weighted variants, DE overlap/precision/direction, energy distance, MMD | |
 | Calibration | `pe_bounds()` — split-half upper bound, baseline lower bound | after the SBB principles (bioRxiv 2026) |
 | Diagnostics | `pe_signal()` — systematic variation, effective gene number | |
 | Statistics | `pe_compare()` — paired bootstrap / Wilcoxon across perturbations | main point of difference from existing tools |
