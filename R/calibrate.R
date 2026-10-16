@@ -26,10 +26,11 @@
 #'     `upper = upper_raw / 4` (for `mse_top` approximately, as its genes are
 #'     chosen from the data).
 #'   * `pearson_delta`, `pearson_delta_top`, `pearson_delta_pert`: with
-#'     split-half correlation `r`, the Spearman-Brown reliability of the
-#'     full-sample profile is `2r / (1 + r)`, and the best correlation any
+#'     split-half correlation r, the Spearman-Brown reliability of the
+#'     full-sample profile is 2r / (1 + r), and the best correlation any
 #'     prediction can reach with it is the square root of that,
-#'     `upper = sqrt(2r / (1 + r))` (left unchanged when `r <= 0`).
+#'     upper = sqrt(2r / (1 + r)) (left unchanged when r is zero or
+#'     negative).
 #'   * `pds`: no simple correction exists; `upper = upper_raw`.
 #'
 #'   The corrections assume independent cells and equal halves; scores

@@ -66,10 +66,11 @@ four times the sampling variance of one full-sample mean, so
 \code{upper = upper_raw / 4} (for \code{mse_top} approximately, as its genes are
 chosen from the data).
 \item \code{pearson_delta}, \code{pearson_delta_top}, \code{pearson_delta_pert}: with
-split-half correlation \code{r}, the Spearman-Brown reliability of the
-full-sample profile is \verb{2r / (1 + r)}, and the best correlation any
+split-half correlation r, the Spearman-Brown reliability of the
+full-sample profile is 2r / (1 + r), and the best correlation any
 prediction can reach with it is the square root of that,
-\verb{upper = sqrt(2r / (1 + r))} (left unchanged when \code{r <= 0}).
+upper = sqrt(2r / (1 + r)) (left unchanged when r is zero or
+negative).
 \item \code{pds}: no simple correction exists; \code{upper = upper_raw}.
 }
 
