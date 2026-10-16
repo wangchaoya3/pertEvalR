@@ -23,6 +23,9 @@
 #     true-effects model near 1; with the default L1 distance it starts to
 #     slip only at very strong shifts (about 0.89 at 3 SD in the prototype).
 #
+# Section 4 adds a paired statistical comparison (pe_compare) of the
+# true-effects model against the training mean at every shift level.
+#
 # Run from R (no installation needed; uses the package source directly):
 #   source("C:/Users/cyw/Desktop/pertEvalR/analysis/fig1_systematic_variation.R")
 # Outputs go to analysis/output/.
@@ -48,6 +51,7 @@ true_effects_only <- function(x, s) {
 # 1. Simulate and evaluate ------------------------------------------------------
 
 rows <- list()
+raw <- list()   # per-perturbation results, for pe_compare() below
 for (lev in shared_levels) {
   for (r in replicates) {
     x <- pe_simulate(shared_effect = lev, effect_sd = 1, seed = r)
@@ -58,10 +62,15 @@ for (lev in shared_levels) {
       baseline_linear(x, s, targets = x$sim$targets),
       true_effects_only(x, s)
     )
-    sm <- pe_summary(pe_evaluate(preds, x, metrics = metrics))
+    res <- pe_evaluate(preds, x, metrics = metrics)
+    sm <- pe_summary(res)
     sm$shared_effect <- lev
     sm$replicate <- r
     rows[[length(rows) + 1]] <- sm
+    # Label perturbations by replicate so replicates can be pooled.
+    res$perturbation <- paste0("rep", r, ":", res$perturbation)
+    res$shared_effect <- lev
+    raw[[length(raw) + 1]] <- res
   }
 }
 per_rep <- do.call(rbind, rows)
@@ -188,7 +197,32 @@ pdf(file.path(out_dir, "fig1_systematic_variation.pdf"),
 draw_figure()
 dev.off()
 
-# 4. Console summary at the extremes ------------------------------------------
+# 4. Paired comparison: true specific effects vs training mean ------------------
+# Pools the held-out perturbations of all replicates at each shift level
+# (5 x 6 = 30 paired observations) and asks, per metric, which of the two
+# predictions is better, with a bootstrap 95% CI for the mean difference.
+
+per_pert <- do.call(rbind, raw)
+cmp <- do.call(rbind, lapply(shared_levels, function(lev) {
+  d <- per_pert[per_pert$shared_effect == lev &
+                  per_pert$method %in% c("true_effects_only", "mean"), ]
+  d$shared_effect <- NULL
+  out <- pe_compare(d, reference = "mean", n_boot = 2000, seed = 1)
+  cbind(shared_effect = lev, out)
+}))
+write.csv(cmp, file.path(out_dir, "fig1_compare_true_vs_mean.csv"),
+          row.names = FALSE)
+
+cat("\nTrue specific effects (a) vs training mean (b), pooled replicates:\n")
+show_cmp <- cmp[, c("shared_effect", "metric", "diff", "ci_low", "ci_high",
+                    "p_adj", "favours")]
+show_cmp[, c("diff", "ci_low", "ci_high")] <-
+  round(show_cmp[, c("diff", "ci_low", "ci_high")], 3)
+show_cmp$p_adj <- signif(show_cmp$p_adj, 2)
+print(show_cmp[order(show_cmp$metric, show_cmp$shared_effect), ],
+      row.names = FALSE)
+
+# 5. Console summary at the extremes ------------------------------------------
 
 show <- agg[agg$shared_effect %in% range(shared_levels),
             c("shared_effect", "metric", "method", "value")]

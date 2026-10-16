@@ -40,6 +40,9 @@ preds <- list(
 )
 res <- pe_evaluate(preds, x)        # one row per method x perturbation x metric
 pe_summary(res)
+
+# Is the linear model really better than the training mean?
+pe_compare(res, reference = "mean", seed = 1)
 ```
 
 Combinations use their own split and the additive baseline:
@@ -71,6 +74,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Baselines | `baseline_control()`, `baseline_mean()`, `baseline_additive()`, `baseline_linear()` | done |
 | Predictions | `pe_prediction()` — wrap any model's output | done |
 | Metrics | `pe_evaluate()`: MSE (all / top-n genes), PearsonΔ vs control (all / top-n), PearsonΔ vs perturbed centroid, PDS (L1 / L2 / cosine); `pe_summary()` | done |
+| Statistics | `pe_compare()`: paired bootstrap CI, Wilcoxon signed-rank, multiple-testing correction, direction-aware verdict | done |
 
 ## Roadmap
 
@@ -81,7 +85,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Metrics | MAE, DEG-weighted variants, DE overlap/precision/direction, energy distance, MMD | |
 | Calibration | `pe_bounds()` — split-half upper bound, baseline lower bound | after the SBB principles (bioRxiv 2026) |
 | Diagnostics | `pe_signal()` — systematic variation, effective gene number | |
-| Statistics | `pe_compare()` — paired bootstrap / Wilcoxon across perturbations | main point of difference from existing tools |
+| Statistics | across-split variation; comparisons pooled over several splits | |
 | Reporting | `pe_report()` HTML; `pe_parity_celleval()` | parity with Arc's cell-eval |
 | Docs | vignette on Norman 2019 and Replogle 2022 | |
 

@@ -1,3 +1,10 @@
+# pertEvalR 0.0.0.9002
+
+* New `pe_compare()`: paired comparison of methods per metric, with the mean
+  per-perturbation difference, a percentile bootstrap confidence interval,
+  a paired Wilcoxon signed-rank test with multiple-testing correction, and a
+  `favours` verdict that respects each metric's direction.
+
 # pertEvalR 0.0.0.9001
 
 * New metrics via `pe_evaluate()`: `mse`, `mse_top`, `pearson_delta`,
