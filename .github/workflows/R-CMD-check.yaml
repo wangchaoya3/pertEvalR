@@ -6,6 +6,8 @@ on:
   pull_request:
 
 name: R-CMD-check
+# Linux only while the repository is private: Windows and macOS runners use
+# GitHub Actions minutes at 2x and 10x the Linux rate.
 
 permissions: read-all
 
@@ -19,8 +21,6 @@ jobs:
       matrix:
         config:
           - {os: ubuntu-latest, r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: macos-latest, r: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}

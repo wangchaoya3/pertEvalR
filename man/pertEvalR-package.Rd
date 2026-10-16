@@ -22,8 +22,8 @@ package README for the roadmap).
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/YOUR-GITHUB/pertEvalR}
-  \item Report bugs at \url{https://github.com/YOUR-GITHUB/pertEvalR/issues}
+  \item \url{https://github.com/wangchaoya3/pertEvalR}
+  \item Report bugs at \url{https://github.com/wangchaoya3/pertEvalR/issues}
 }
 
 }

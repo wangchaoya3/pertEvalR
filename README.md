@@ -1,7 +1,7 @@
 # pertEvalR
 
 > Calibrated evaluation of single-cell perturbation response predictions in R.
-> **Status: early skeleton (v0.0.0.9000).** The name is a placeholder; check
+> **Status: early development (v0.0.0.9005).** The name is a placeholder; check
 > CRAN, Bioconductor and GitHub for clashes before the first release.
 
 Models that predict how cells respond to perturbations ("virtual cell" and
@@ -22,7 +22,7 @@ Bioconductor users one framework for:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("YOUR-GITHUB/pertEvalR")
+remotes::install_github("wangchaoya3/pertEvalR")
 ```
 
 ## Quick start
@@ -31,6 +31,7 @@ remotes::install_github("YOUR-GITHUB/pertEvalR")
 library(pertEvalR)
 
 x <- pe_simulate(seed = 1)          # or pe_data(expr, labels) / as_pe_data(sce, ...)
+pe_signal(x, seed = 1)              # how much of the change is one shared shift?
 s <- pe_split(x, type = "unseen_single", seed = 42)
 
 preds <- list(
@@ -79,6 +80,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Metrics | `pe_evaluate()`: MSE (all / top-n genes), PearsonΔ vs control (all / top-n), PearsonΔ vs perturbed centroid, PDS (L1 / L2 / cosine); `pe_summary()` | done |
 | Statistics | `pe_compare()`: paired bootstrap CI, Wilcoxon signed-rank, multiple-testing correction, direction-aware verdict | done |
 | Calibration | `pe_bounds()` (best uninformative baseline / split-half replicate), `pe_calibrate()` | done |
+| Diagnostics | `pe_signal()`: systematic variation (cosine to average shift, systematic fraction), effect size, effective gene number, split-half reliability | done |
 
 ## Roadmap
 
@@ -87,7 +89,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Data | `unseen_cell_line` split; h5ad import via `zellkonverter` | |
 | Baselines | `baseline_linear_prior()` | external gene embeddings, e.g. STRING |
 | Metrics | MAE, DEG-weighted variants, DE overlap/precision/direction, energy distance, MMD | |
-| Diagnostics | `pe_signal()` — systematic variation, effective gene number | |
+| Diagnostics | metric discriminability (can a metric separate known-good from uninformative predictions?) | |
 | Statistics | across-split variation; comparisons pooled over several splits | |
 | Reporting | `pe_report()` HTML; `pe_parity_celleval()` | parity with Arc's cell-eval |
 | Docs | vignette on Norman 2019 and Replogle 2022 | |
@@ -101,7 +103,7 @@ devtools::check()
 ```
 
 Commit the generated `man/` folder; the GitHub Actions workflow in
-`.github/workflows/` runs `R CMD check` on Linux, macOS and Windows.
+`.github/workflows/` runs `R CMD check` on Linux.
 
 ## License
 

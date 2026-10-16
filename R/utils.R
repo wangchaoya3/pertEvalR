@@ -55,6 +55,25 @@ check_pe_split <- function(split, x) {
   invisible(split)
 }
 
+# Randomly relabel half of the cells of each perturbation in `perts` as
+# "<label><suffix>" (half A); the other half keeps its label (half B).
+# Perturbations with fewer than two cells are left untouched.
+split_cells_in_half <- function(x, perts, suffix = "__pe_half_A") {
+  if (any(endsWith(unique(x$perturbation), suffix))) {
+    stop("Perturbation labels must not end with \"", suffix, "\".",
+         call. = FALSE)
+  }
+  labels <- x$perturbation
+  for (p in perts) {
+    idx <- which(labels == p)
+    if (length(idx) < 2) next
+    half <- idx[sample.int(length(idx), floor(length(idx) / 2))]
+    labels[half] <- paste0(p, suffix)
+  }
+  x$perturbation <- labels
+  x
+}
+
 # Direction of each metric: TRUE where larger values are better.
 metric_higher_is_better <- function(metric) {
   !metric %in% c("mse", "mse_top")

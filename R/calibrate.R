@@ -131,18 +131,7 @@ full_sample_bound <- function(value, metric) {
 # prediction of the other half.
 replicate_scores <- function(x, split, metrics, top_n, distance) {
   suffix <- "__pe_replicate_half"
-  if (any(endsWith(unique(x$perturbation), suffix))) {
-    stop("Perturbation labels must not end with \"", suffix, "\".",
-         call. = FALSE)
-  }
-  labels <- x$perturbation
-  for (p in split$test) {
-    idx <- which(labels == p)
-    half <- idx[sample.int(length(idx), floor(length(idx) / 2))]
-    labels[half] <- paste0(p, suffix)
-  }
-  x_half <- x
-  x_half$perturbation <- labels
+  x_half <- split_cells_in_half(x, split$test, suffix)
 
   pred <- pe_pseudobulk(x_half, paste0(split$test, suffix))
   colnames(pred) <- split$test

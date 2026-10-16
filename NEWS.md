@@ -1,3 +1,13 @@
+# pertEvalR 0.0.0.9005
+
+* New `pe_signal()`: dataset diagnostics before any model is evaluated.
+  Per perturbation: cosine similarity of its change to the average change
+  (systematic variation), effect size, effective number of changed genes
+  (participation ratio) and split-half reliability (Spearman-Brown). Dataset
+  summary: mean / median cosine and the systematic fraction of the total
+  squared change.
+* Internal: `pe_bounds()` and `pe_signal()` share one cell-halving helper.
+
 # pertEvalR 0.0.0.9004
 
 * `pe_bounds()` lower bound: the better uninformative baseline is now chosen

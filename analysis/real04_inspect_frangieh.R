@@ -6,7 +6,9 @@
 # Nothing here loads the full expression matrix.
 #
 # Data: scPerturb harmonised Perturb-seq collection, Zenodo record 10044268,
-# CC BY 4.0. File: FrangiehIzar2021_RNA.h5ad (about 700 MB).
+# CC BY 4.0. File: FrangiehIzar2021_RNA.h5ad (about 1.5 GB).
+# Frangieh cells were profiled under several culture conditions, so this
+# script also looks for a condition column.
 #
 # One-time setup (Bioconductor; no Python needed):
 #   install.packages("BiocManager")
@@ -105,7 +107,7 @@ for (col in intersect(c("nperts", "perturbation_type", "celltype",
   print(utils::head(sort(table(obs[[col]]), decreasing = TRUE), 6))
 }
 
-# Columns that look like experimental conditions
+# Columns that look like experimental conditions, crossed with control
 cat("\n== Low-cardinality columns (possible conditions) ==\n")
 for (col in names(obs)) {
   v <- obs[[col]]
@@ -118,7 +120,8 @@ for (col in names(obs)) {
 if ("perturbation" %in% names(obs)) {
   is_ctrl <- as.character(obs$perturbation) %in%
     c("control", "NT", "non-targeting", "NonTargeting")
-  cat("\nControl-like cells:", sum(is_ctrl), "\n")
+  cat("\nControl-like cells (perturbation in control/NT/non-targeting):",
+      sum(is_ctrl), "\n")
 }
 
 cat("\nDone. Please paste all of the output above into the chat.\n")

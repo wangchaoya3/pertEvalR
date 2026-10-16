@@ -16,7 +16,7 @@
 #   * unseen combinations:         no change, training mean, additive model
 # Outputs (analysis/output/): per-perturbation results, summary, paired
 # comparisons against the training mean, calibrated scores (pe_bounds +
-# pe_calibrate), a systematic-variation statistic, and a figure.
+# pe_calibrate), signal diagnostics (pe_signal), and a figure.
 #
 # Run:
 #   source(file.path(Sys.getenv("USERPROFILE"), "Desktop", "pertEvalR",
@@ -180,20 +180,23 @@ if (file.exists(cache)) {
 }
 print(x)
 
-# 2. Systematic variation ---------------------------------------------------------
-# Cosine similarity between each perturbation's change from control and the
-# average change over all perturbations (the statistic used by Systema).
-# Values near 1 mean perturbations mostly share one common shift.
-pb <- pe_pseudobulk(x)
-ctrl <- pb[, x$control]
-delta <- pb[, colnames(pb) != x$control, drop = FALSE] - ctrl
-avg <- rowMeans(delta)
-cos_sim <- colSums(delta * avg) / (sqrt(colSums(delta^2)) * sqrt(sum(avg^2)))
-cat(sprintf("\nSystematic variation: mean cosine similarity to the average shift = %.2f (median %.2f)\n",
-            mean(cos_sim), stats::median(cos_sim)))
-write.csv(data.frame(perturbation = names(cos_sim), cosine_to_average = cos_sim),
-          file.path(out_dir, "norman_systematic_variation.csv"),
+# 2. Signal diagnostics -------------------------------------------------------------
+# pe_signal(): cosine similarity between each perturbation's change from control
+# and the average change over all perturbations (the Systema statistic; near 1 =
+# perturbations mostly share one common shift), plus effect size, effective
+# number of changed genes and split-half reliability.
+sig <- pe_signal(x, seed = 1)
+print(sig)
+cat("\nBy perturbation type (medians):\n")
+sp <- sig$per_perturbation
+sp$type <- ifelse(grepl(x$combo_sep, sp$perturbation, fixed = TRUE),
+                  "combo", "single")
+print(aggregate(cbind(effect_size, cosine_to_average, effective_genes,
+                      reliability) ~ type, data = sp, FUN = stats::median))
+write.csv(sp, file.path(out_dir, "norman_systematic_variation.csv"),
           row.names = FALSE)
+write.csv(as.data.frame(sig$summary),
+          file.path(out_dir, "norman_signal_summary.csv"), row.names = FALSE)
 
 # 3. Evaluate baselines over several splits ---------------------------------------
 raw <- list()
