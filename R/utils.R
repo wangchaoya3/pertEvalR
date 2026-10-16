@@ -55,6 +55,11 @@ check_pe_split <- function(split, x) {
   invisible(split)
 }
 
+# Direction of each metric: TRUE where larger values are better.
+metric_higher_is_better <- function(metric) {
+  !metric %in% c("mse", "mse_top")
+}
+
 is_matrix_like <- function(expr) {
   is.matrix(expr) || methods::is(expr, "Matrix")
 }

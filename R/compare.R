@@ -101,9 +101,9 @@ pe_compare <- function(results, metrics = NULL, reference = NULL,
 
   rows$p_adj <- stats::p.adjust(rows$p_value, method = p_adjust)
 
-  lower_better <- rows$metric %in% c("mse", "mse_top")
+  higher_better <- metric_higher_is_better(rows$metric)
   significant <- !is.na(rows$ci_low) & (rows$ci_low > 0 | rows$ci_high < 0)
-  a_better <- ifelse(lower_better, rows$diff < 0, rows$diff > 0)
+  a_better <- ifelse(higher_better, rows$diff > 0, rows$diff < 0)
   rows$favours <- ifelse(
     is.na(rows$diff) | rows$n < 2, NA_character_,
     ifelse(significant, ifelse(a_better, rows$method_a, rows$method_b),

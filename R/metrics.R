@@ -75,6 +75,7 @@ pe_evaluate <- function(prediction, x,
                     top_n = top_n, distance = distance)
   out <- do.call(rbind, results)
   rownames(out) <- NULL
+  attr(out, "settings") <- list(top_n = top_n, distance = distance)
   out
 }
 

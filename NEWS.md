@@ -1,3 +1,23 @@
+# pertEvalR 0.0.0.9004
+
+* `pe_bounds()` lower bound: the better uninformative baseline is now chosen
+  once per metric (by its mean over perturbations) instead of separately for
+  each perturbation, which biased the bound upwards.
+* `pe_bounds()` upper bound: the split-half replicate score is corrected to
+  full sample size (MSE divided by 4; Spearman-Brown ceiling
+  `sqrt(2r / (1 + r))` for correlation metrics). The uncorrected score is kept
+  in the new column `upper_raw`.
+
+# pertEvalR 0.0.0.9003
+
+* New `pe_bounds()`: per-perturbation lower bound (best of the no-change and
+  training-mean baselines) and upper bound (split-half technical replicate)
+  for every metric.
+* New `pe_calibrate()`: places method scores between those bounds
+  (0 = uninformative, 1 = technical replicate).
+* `pe_evaluate()` results now record their `top_n` and `distance` settings in
+  a `"settings"` attribute, so mismatched calibrations are caught.
+
 # pertEvalR 0.0.0.9002
 
 * New `pe_compare()`: paired comparison of methods per metric, with the mean

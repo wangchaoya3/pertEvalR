@@ -27,10 +27,16 @@
 # true-effects model against the training mean at every shift level.
 #
 # Run from R (no installation needed; uses the package source directly):
-#   source("C:/Users/cyw/Desktop/pertEvalR/analysis/fig1_systematic_variation.R")
+#   source(file.path(Sys.getenv("USERPROFILE"), "Desktop", "pertEvalR",
+#                    "analysis", "fig1_systematic_variation.R"))
 # Outputs go to analysis/output/.
 
-pkg <- "C:/Users/cyw/Desktop/pertEvalR"   # change if the package moves
+# Package folder on this computer's Desktop (works for any Windows user name).
+# If your Desktop is elsewhere (e.g. OneDrive), set pkg to the full path.
+pkg <- file.path(Sys.getenv("USERPROFILE"), "Desktop", "pertEvalR")
+if (!file.exists(file.path(pkg, "DESCRIPTION"))) {
+  stop("pertEvalR not found at ", pkg, ". Set `pkg` to the package folder.")
+}
 devtools::load_all(pkg, quiet = TRUE)
 
 out_dir <- file.path(pkg, "analysis", "output")

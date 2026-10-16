@@ -43,6 +43,9 @@ pe_summary(res)
 
 # Is the linear model really better than the training mean?
 pe_compare(res, reference = "mean", seed = 1)
+
+# How far between "uninformative" (0) and "technical replicate" (1)?
+pe_calibrate(res, pe_bounds(x, s, seed = 1))
 ```
 
 Combinations use their own split and the additive baseline:
@@ -75,6 +78,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Predictions | `pe_prediction()` — wrap any model's output | done |
 | Metrics | `pe_evaluate()`: MSE (all / top-n genes), PearsonΔ vs control (all / top-n), PearsonΔ vs perturbed centroid, PDS (L1 / L2 / cosine); `pe_summary()` | done |
 | Statistics | `pe_compare()`: paired bootstrap CI, Wilcoxon signed-rank, multiple-testing correction, direction-aware verdict | done |
+| Calibration | `pe_bounds()` (best uninformative baseline / split-half replicate), `pe_calibrate()` | done |
 
 ## Roadmap
 
@@ -83,7 +87,6 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Data | `unseen_cell_line` split; h5ad import via `zellkonverter` | |
 | Baselines | `baseline_linear_prior()` | external gene embeddings, e.g. STRING |
 | Metrics | MAE, DEG-weighted variants, DE overlap/precision/direction, energy distance, MMD | |
-| Calibration | `pe_bounds()` — split-half upper bound, baseline lower bound | after the SBB principles (bioRxiv 2026) |
 | Diagnostics | `pe_signal()` — systematic variation, effective gene number | |
 | Statistics | across-split variation; comparisons pooled over several splits | |
 | Reporting | `pe_report()` HTML; `pe_parity_celleval()` | parity with Arc's cell-eval |

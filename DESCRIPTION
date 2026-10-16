@@ -1,7 +1,7 @@
 Package: pertEvalR
 Type: Package
 Title: Calibrated Evaluation of Single-Cell Perturbation Response Predictions
-Version: 0.0.0.9002
+Version: 0.0.0.9004
 Authors@R:
     person("Chaoya", "Wang", email = "wanchaoya3@gmail.com",
            role = c("aut", "cre"))
@@ -10,9 +10,9 @@ Description: A framework for evaluating models that predict transcriptional
     (for example Perturb-seq). Provides standard data splits, reference
     baselines (control, training mean, additive and linear models),
     per-perturbation metrics that separate perturbation-specific effects from
-    systematic variation, and paired statistical comparison of models with
-    bootstrap confidence intervals. Designed to grow into calibrated metrics
-    and signal diagnostics.
+    systematic variation, calibrated scores placed between an uninformative
+    lower bound and a technical-replicate upper bound, and paired statistical
+    comparison of models with bootstrap confidence intervals.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
