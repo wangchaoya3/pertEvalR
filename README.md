@@ -1,7 +1,7 @@
 # pertEvalR
 
 > Calibrated evaluation of single-cell perturbation response predictions in R.
-> **Status: early development (v0.0.0.9005).** The name is a placeholder; check
+> **Status: early development (v0.0.0.9006).** The name is a placeholder; check
 > CRAN, Bioconductor and GitHub for clashes before the first release.
 
 Models that predict how cells respond to perturbations ("virtual cell" and
@@ -80,7 +80,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Metrics | `pe_evaluate()`: MSE (all / top-n genes), PearsonΔ vs control (all / top-n), PearsonΔ vs perturbed centroid, PDS (L1 / L2 / cosine); `pe_summary()` | done |
 | Statistics | `pe_compare()`: paired bootstrap CI, Wilcoxon signed-rank, multiple-testing correction, direction-aware verdict | done |
 | Calibration | `pe_bounds()` (best uninformative baseline / split-half replicate), `pe_calibrate()` | done |
-| Diagnostics | `pe_signal()`: systematic variation (cosine to average shift, systematic fraction), effect size, effective gene number, split-half reliability | done |
+| Diagnostics | `pe_signal()`: systematic variation (cosine to average shift, systematic fraction), effect size, effective gene number, split-half reliability; `pe_subset()` to evaluate only reliable perturbations | done |
 
 ## Roadmap
 

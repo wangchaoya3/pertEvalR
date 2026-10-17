@@ -42,12 +42,18 @@ change per gene).
 \item \code{effective_genes}: participation ratio
 sum(delta^2)^2 / sum(delta^4), roughly the number of genes that carry
 the change. Small values mean the effect is concentrated in a few genes.
+Sampling noise spreads over all genes and inflates this number when the
+effect is weak, so compare it between perturbations or datasets rather
+than reading it as a count of affected genes.
 \item \code{reliability}: the cells are split at random into two halves and the
 two half-sample deltas are correlated over genes; the split-half
 correlation r is converted to full-sample reliability with the
 Spearman-Brown formula 2r / (1 + r) (left unchanged when r is zero or
 negative). Low values mean the change is hard to tell apart from
 sampling noise. \code{NA} for perturbations with fewer than two cells.
+Reliability grows with the number of cells, so it describes how well an
+effect is measured in this dataset, not how strong it is biologically.
+\code{\link[=pe_subset]{pe_subset()}} restricts an evaluation to reliable perturbations.
 }
 
 The dataset summary reports the mean and median cosine and the

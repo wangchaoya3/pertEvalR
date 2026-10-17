@@ -1,3 +1,11 @@
+# pertEvalR 0.0.0.9006
+
+* New `pe_subset()`: restricts `pe_evaluate()` results or `pe_bounds()` tables
+  to chosen perturbations (or to those a `pe_signal()` object marks as
+  reliable) while keeping the settings that `pe_calibrate()` checks.
+* `?pe_signal` explains how noise affects `effective_genes` and how cell
+  numbers affect `reliability`.
+
 # pertEvalR 0.0.0.9005
 
 * New `pe_signal()`: dataset diagnostics before any model is evaluated.
