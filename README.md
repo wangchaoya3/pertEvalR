@@ -1,7 +1,7 @@
 # pertEvalR
 
 > Calibrated evaluation of single-cell perturbation response predictions in R.
-> **Version 0.1.0.**
+> **Version 0.1.0.** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23431903.svg)](https://doi.org/10.5281/zenodo.23431903)
 
 Models that predict how cells respond to perturbations ("virtual cell" and
 in-silico perturbation models) are increasingly compared using metrics that
@@ -112,3 +112,11 @@ Commit the generated `man/` folder; the GitHub Actions workflow in
 ## License
 
 MIT
+
+## Citation
+
+If you use pertEvalR, please cite the archived version:
+
+Wang C. (2026). pertEvalR: calibrated, signal-aware evaluation of single-cell
+perturbation response predictions in R (version 0.1.0). Zenodo.
+https://doi.org/10.5281/zenodo.23431903
