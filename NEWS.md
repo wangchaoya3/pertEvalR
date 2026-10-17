@@ -1,3 +1,13 @@
+# pertEvalR 0.0.0.9007
+
+* New vignette "Evaluating perturbation response predictions with pertEvalR"
+  covering the full workflow on simulated data
+  (`vignette("pertEvalR")`).
+* `pe_simulate()` gains `effect_spread`: log-normal per-perturbation
+  strength, so simulated screens mix strong and barely measurable
+  perturbations. The default (0) reproduces earlier simulations exactly; the
+  strengths are returned in `sim$strength`.
+
 # pertEvalR 0.0.0.9006
 
 * New `pe_subset()`: restricts `pe_evaluate()` results or `pe_bounds()` tables

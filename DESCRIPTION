@@ -1,7 +1,7 @@
 Package: pertEvalR
 Type: Package
 Title: Calibrated Evaluation of Single-Cell Perturbation Response Predictions
-Version: 0.0.0.9006
+Version: 0.0.0.9007
 Authors@R:
     person("Chaoya", "Wang", email = "wanchaoya3@gmail.com",
            role = c("aut", "cre"))
@@ -11,8 +11,10 @@ Description: A framework for evaluating models that predict transcriptional
     baselines (control, training mean, additive and linear models),
     per-perturbation metrics that separate perturbation-specific effects from
     systematic variation, calibrated scores placed between an uninformative
-    lower bound and a technical-replicate upper bound, and paired statistical
-    comparison of models with bootstrap confidence intervals.
+    lower bound and a technical-replicate upper bound, paired statistical
+    comparison of models with bootstrap confidence intervals, and dataset
+    diagnostics (systematic variation, split-half reliability) for choosing
+    the perturbations on which models can be told apart.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -27,7 +29,10 @@ Suggests:
     SeuratObject (>= 5.0.0),
     SingleCellExperiment,
     SummarizedExperiment,
+    knitr,
+    rmarkdown,
     testthat (>= 3.1.5)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://github.com/wangchaoya3/pertEvalR
 BugReports: https://github.com/wangchaoya3/pertEvalR/issues

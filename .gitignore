@@ -5,3 +5,5 @@
 .DS_Store
 analysis/output/
 analysis/data/
+/doc/
+/Meta/

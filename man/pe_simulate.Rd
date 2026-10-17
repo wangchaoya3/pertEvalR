@@ -14,6 +14,7 @@ pe_simulate(
   effect_sd = 1,
   shared_effect = 0.5,
   noise_sd = 0.5,
+  effect_spread = 0,
   seed = NULL
 )
 }
@@ -38,6 +39,9 @@ all perturbed cells.}
 
 \item{noise_sd}{Standard deviation of cell-level noise.}
 
+\item{effect_spread}{Standard deviation of the log strength of single
+perturbations. The default 0 gives all perturbations the same strength.}
+
 \item{seed}{Optional integer seed. The global RNG state is restored
 afterwards.}
 }
@@ -47,7 +51,8 @@ perturbations named \code{P1}, \code{P2}, ... and combinations such as \code{"P1
 The simulated truth is stored in the extra element \code{sim}, a list with
 \code{baseline}, \code{shared}, the genes x perturbations matrix \code{effects}, and
 \code{targets}, a named vector giving each single perturbation's target gene
-(suitable for the \code{targets} argument of \code{\link[=baseline_linear]{baseline_linear()}}).
+(suitable for the \code{targets} argument of \code{\link[=baseline_linear]{baseline_linear()}}), and
+\code{strength}, the strength multiplier of each single perturbation.
 }
 \description{
 Generates log-scale expression for control cells, single-gene
@@ -64,6 +69,10 @@ systematic variation, where the mean baseline looks deceptively good.
 
 Each single perturbation knocks down its own target gene (an effect of
 \code{-2 * effect_sd}) in addition to changing \code{n_affected} random genes.
+With \code{effect_spread > 0}, the whole effect of each single perturbation is
+multiplied by its own strength, drawn from a log-normal distribution, so
+that some perturbations are strong and others barely measurable, as in
+real screens.
 }
 \examples{
 x <- pe_simulate(seed = 1)

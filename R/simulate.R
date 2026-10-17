@@ -13,6 +13,10 @@
 #'
 #' Each single perturbation knocks down its own target gene (an effect of
 #' `-2 * effect_sd`) in addition to changing `n_affected` random genes.
+#' With `effect_spread > 0`, the whole effect of each single perturbation is
+#' multiplied by its own strength, drawn from a log-normal distribution, so
+#' that some perturbations are strong and others barely measurable, as in
+#' real screens.
 #'
 #' @param n_genes Number of genes.
 #' @param n_single Number of single-gene perturbations.
@@ -25,6 +29,8 @@
 #' @param shared_effect Standard deviation of the systematic shift shared by
 #'   all perturbed cells.
 #' @param noise_sd Standard deviation of cell-level noise.
+#' @param effect_spread Standard deviation of the log strength of single
+#'   perturbations. The default 0 gives all perturbations the same strength.
 #' @param seed Optional integer seed. The global RNG state is restored
 #'   afterwards.
 #'
@@ -33,7 +39,8 @@
 #'   The simulated truth is stored in the extra element `sim`, a list with
 #'   `baseline`, `shared`, the genes x perturbations matrix `effects`, and
 #'   `targets`, a named vector giving each single perturbation's target gene
-#'   (suitable for the `targets` argument of [baseline_linear()]).
+#'   (suitable for the `targets` argument of [baseline_linear()]), and
+#'   `strength`, the strength multiplier of each single perturbation.
 #' @export
 #' @examples
 #' x <- pe_simulate(seed = 1)
@@ -41,7 +48,8 @@
 pe_simulate <- function(n_genes = 200, n_single = 20, n_combo = 10,
                         cells_per_pert = 30, n_control = 200,
                         n_affected = 20, effect_sd = 1,
-                        shared_effect = 0.5, noise_sd = 0.5, seed = NULL) {
+                        shared_effect = 0.5, noise_sd = 0.5,
+                        effect_spread = 0, seed = NULL) {
   if (n_single < 2) {
     stop("`n_single` must be at least 2.", call. = FALSE)
   }
@@ -54,15 +62,20 @@ pe_simulate <- function(n_genes = 200, n_single = 20, n_combo = 10,
   if (n_single > n_genes) {
     stop("`n_single` cannot exceed `n_genes`.", call. = FALSE)
   }
+  if (!is.numeric(effect_spread) || length(effect_spread) != 1 ||
+      is.na(effect_spread) || effect_spread < 0) {
+    stop("`effect_spread` must be a single non-negative number.",
+         call. = FALSE)
+  }
   with_seed(seed, simulate_impl(
     n_genes, n_single, n_combo, cells_per_pert, n_control,
-    n_affected, effect_sd, shared_effect, noise_sd
+    n_affected, effect_sd, shared_effect, noise_sd, effect_spread
   ))
 }
 
 simulate_impl <- function(n_genes, n_single, n_combo, cells_per_pert,
                           n_control, n_affected, effect_sd, shared_effect,
-                          noise_sd) {
+                          noise_sd, effect_spread = 0) {
   genes <- paste0("g", seq_len(n_genes))
   singles <- paste0("P", seq_len(n_single))
 
@@ -77,6 +90,13 @@ simulate_impl <- function(n_genes, n_single, n_combo, cells_per_pert,
     hit <- sample.int(n_genes, n_affected)
     single_eff[hit, j] <- stats::rnorm(n_affected, mean = 0, sd = effect_sd)
     single_eff[target_idx[j], j] <- -2 * effect_sd
+  }
+  # Random draws for the strengths happen only when requested, so results
+  # for effect_spread = 0 are identical to earlier versions.
+  strength <- stats::setNames(rep(1, n_single), singles)
+  if (effect_spread > 0) {
+    strength[] <- exp(stats::rnorm(n_single, mean = 0, sd = effect_spread))
+    single_eff <- sweep(single_eff, 2, strength, `*`)
   }
 
   combo_names <- character(0)
@@ -107,6 +127,7 @@ simulate_impl <- function(n_genes, n_single, n_combo, cells_per_pert,
   out$sim <- list(baseline = stats::setNames(baseline, genes),
                   shared = stats::setNames(shared, genes),
                   effects = effects,
-                  targets = stats::setNames(genes[target_idx], singles))
+                  targets = stats::setNames(genes[target_idx], singles),
+                  strength = strength)
   out
 }

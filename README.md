@@ -1,7 +1,7 @@
 # pertEvalR
 
 > Calibrated evaluation of single-cell perturbation response predictions in R.
-> **Status: early development (v0.0.0.9006).** The name is a placeholder; check
+> **Status: early development (v0.0.0.9007).** The name is a placeholder; check
 > CRAN, Bioconductor and GitHub for clashes before the first release.
 
 Models that predict how cells respond to perturbations ("virtual cell" and
@@ -49,6 +49,11 @@ pe_compare(res, reference = "mean", seed = 1)
 pe_calibrate(res, pe_bounds(x, s, seed = 1))
 ```
 
+The vignette walks through the whole workflow, including signal
+diagnostics and reliability strata:
+`remotes::install_github("wangchaoya3/pertEvalR", build_vignettes = TRUE)`,
+then `vignette("pertEvalR")`.
+
 Combinations use their own split and the additive baseline:
 
 ```r
@@ -92,7 +97,7 @@ matrix with `pe_prediction(pred, s, method = "my_model")` and pass it to
 | Diagnostics | metric discriminability (can a metric separate known-good from uninformative predictions?) | |
 | Statistics | across-split variation; comparisons pooled over several splits | |
 | Reporting | `pe_report()` HTML; `pe_parity_celleval()` | parity with Arc's cell-eval |
-| Docs | vignette on Norman 2019 and Replogle 2022 | |
+| Docs | real-data article (Norman 2019, Frangieh 2021) | |
 
 ## Development
 

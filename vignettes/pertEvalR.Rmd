@@ -1,0 +1,291 @@
+---
+title: "Evaluating perturbation response predictions with pertEvalR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Evaluating perturbation response predictions with pertEvalR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(digits = 3)
+```
+
+Models that predict how cells respond to a perturbation ("virtual cell"
+models, in-silico knockouts) are usually compared with a handful of
+metrics averaged over held-out perturbations. Those averages can mislead:
+
+* when most perturbations shift expression in the same direction, a
+  prediction that ignores the perturbation altogether can score well;
+* when most perturbations barely change expression, every method scores
+  alike because the measured change is mostly noise;
+* raw scores have no fixed scale, so "0.54 versus 0.52" says nothing about
+  how much of the achievable improvement a model has captured.
+
+`pertEvalR` addresses these points in one workflow:
+
+1. **diagnose** the dataset (`pe_signal()`);
+2. **split** perturbations into training and held-out sets (`pe_split()`);
+3. **predict** with reference baselines or your own model
+   (`baseline_*()`, `pe_prediction()`);
+4. **score** each held-out perturbation (`pe_evaluate()`);
+5. **compare** methods with paired statistics (`pe_compare()`);
+6. **calibrate** scores between an uninformative baseline and a technical
+   replicate (`pe_bounds()`, `pe_calibrate()`);
+7. **stratify** by how well each perturbation is measured (`pe_subset()`).
+
+This vignette walks through the workflow on simulated data, so every step
+runs in a few seconds.
+
+```{r setup}
+library(pertEvalR)
+```
+
+## 1. Data
+
+A `pe_data` object holds a genes x cells matrix of log-normalized
+expression and one perturbation label per cell. Control cells carry the
+label given by `control`; combinations of perturbations are written with a
+separator, by default `"+"` (for example `"KLF1+MAP2K6"`).
+
+```{r data}
+x <- pe_simulate(n_genes = 300, n_single = 60, n_combo = 30,
+                 shared_effect = 0.3, noise_sd = 1, effect_spread = 1,
+                 seed = 1)
+x
+```
+
+`pe_simulate()` returns data with known effects: each single perturbation
+knocks down its own target gene and changes a random set of other genes,
+every perturbation adds a common shift whose size is set by `shared_effect`,
+and `effect_spread` makes some perturbations much stronger than others, as in
+real screens.
+
+Your own data come in through `pe_data()` (any matrix or sparse matrix) or
+directly from Bioconductor and Seurat objects:
+
+```{r convert, eval = FALSE}
+x <- pe_data(expr, perturbation = labels, control = "non-targeting")
+x <- as_pe_data(sce, perturbation_col = "target_gene",
+                control = "non-targeting")            # uses assay "logcounts"
+x <- as_pe_data(seurat_obj, perturbation_col = "target_gene",
+                control = "non-targeting")            # uses layer "data"
+```
+
+## 2. Diagnose the dataset first
+
+Before comparing any models, `pe_signal()` describes what the data can
+show. For each perturbation it reports the cosine similarity between its
+change from control and the average change over all perturbations
+(systematic variation), the effect size, the effective number of changed
+genes, and the split-half reliability of the change.
+
+```{r signal}
+sig <- pe_signal(x, seed = 1)
+sig
+head(sig$per_perturbation)
+```
+
+The two summary numbers to look at first:
+
+* **systematic fraction**: the share of all change that lies along the one
+  average shift. When it is large, metrics that correlate predicted and
+  observed change from control reward predicting that shift for every
+  perturbation.
+* **median reliability**: how reproducible the changes are between two
+  random halves of the cells. When it is low, most perturbations have no
+  measurable effect and no model can be told apart from a baseline on them.
+
+A simulation with a strong common shift looks very different: almost all
+of the change is the same for every perturbation.
+
+```{r signal-compare}
+pe_signal(pe_simulate(n_genes = 300, n_single = 60, n_combo = 30,
+                      shared_effect = 2, seed = 1), seed = 1)
+```
+
+## 3. Split
+
+`pe_split()` holds out perturbations, not cells. Two tasks are supported:
+
+* `"unseen_single"`: predict single perturbations never seen in training.
+  Combinations involving a held-out gene are removed from training, so its
+  effect cannot leak in.
+* `"unseen_combo"`: predict combinations whose single perturbations were
+  all seen in training.
+
+```{r split}
+s <- pe_split(x, type = "unseen_single", test_frac = 0.25, seed = 42)
+s
+```
+
+## 4. Predict
+
+Four reference baselines cover the predictions any useful model has to beat:
+
+| Baseline | Prediction for every held-out perturbation |
+|---|---|
+| `baseline_control()` | no change: the control profile |
+| `baseline_mean()` | the average of the training perturbations |
+| `baseline_additive()` | for combinations: control plus the sum of the single effects |
+| `baseline_linear()` | the linear model of Ahlmann-Eltze et al. (2025) |
+
+```{r baselines}
+preds <- list(
+  baseline_control(x, s),
+  baseline_mean(x, s),
+  baseline_linear(x, s, targets = x$sim$targets)
+)
+```
+
+`targets` maps perturbation labels to target genes; when labels already are
+gene names (as in most Perturb-seq screens), it can be omitted.
+
+Predictions from your own model enter through `pe_prediction()`: a genes x
+held-out perturbations matrix on the same scale as the data, with columns
+named after `s$test`. Here, for illustration only, a "model" that peeks at
+the held-out data and adds noise:
+
+```{r own-model}
+truth <- pe_truth(x, s)
+set.seed(7)
+my_pred <- truth + matrix(rnorm(length(truth), sd = 0.15), nrow(truth))
+preds$my_model <- pe_prediction(my_pred, s, method = "my_model")
+preds$my_model
+```
+
+## 5. Score
+
+`pe_evaluate()` scores every method on every held-out perturbation and
+returns one row per method, perturbation and metric.
+
+```{r evaluate}
+res <- pe_evaluate(preds, x)
+head(res)
+pe_summary(res)
+```
+
+| Metric | Measures | Better |
+|---|---|---|
+| `mse`, `mse_top` | squared error, over all genes / the `top_n` most changed genes | lower |
+| `pearson_delta`, `pearson_delta_top` | correlation of predicted and observed change from control | higher |
+| `pearson_delta_pert` | the same, but change from the average perturbed profile | higher |
+| `pds` | how well the prediction identifies its own perturbation among all held-out ones (0.5 = chance) | higher |
+
+Some metrics are undefined for some baselines (for example the correlation
+with the change from control for the no-change baseline, which predicts no
+change); those values are `NA`.
+
+## 6. Compare
+
+Means over a few dozen perturbations differ by chance. `pe_compare()` pairs
+methods perturbation by perturbation and reports the mean difference, a
+bootstrap confidence interval, a Wilcoxon signed-rank test with
+multiple-testing correction, and which method the evidence favours,
+respecting the direction of each metric.
+
+```{r compare}
+cmp <- pe_compare(res, reference = "mean", seed = 1)
+cmp[cmp$metric %in% c("pearson_delta", "pds") & cmp$method_a != "control",
+    c("metric", "method_a", "method_b", "n", "diff", "ci_low", "ci_high",
+      "p_adj", "favours")]
+```
+
+## 7. Calibrate
+
+A raw score means little until it is placed between two references:
+
+* **lower bound**: the better of the no-change and training-mean baselines
+  for that metric (score 0);
+* **upper bound**: a technical replicate, obtained by predicting one random
+  half of each held-out perturbation's cells from the other half and
+  correcting to the full sample size (score 1).
+
+```{r calibrate}
+b <- pe_bounds(x, s, seed = 1)
+cal <- pe_calibrate(res, b)
+cal[cal$metric %in% c("pearson_delta", "pds"),
+    c("method", "metric", "score", "lower", "upper", "calibrated")]
+```
+
+A calibrated score near 0 means "no better than ignoring the perturbation";
+near 1 means "as good as measuring the perturbation again". Scores slightly
+above 1 are possible because the replicate bound is estimated.
+
+## 8. Stratify by measurement reliability
+
+On real screens many perturbations have little measurable effect, and an
+average over all of them mainly measures how methods fit noise.
+`pe_subset()` restricts results and bounds to a chosen set of perturbations
+while keeping the settings `pe_calibrate()` checks. Passing the
+`pe_signal()` object selects perturbations by reliability; the threshold is
+a property of the data and is fixed before any model is compared.
+
+Reliability should track how strong a perturbation really is. The
+simulation records each single perturbation's strength, so this can be
+checked directly:
+
+```{r reliability-check}
+rel <- sig$per_perturbation
+singles <- names(x$sim$strength)
+cor(x$sim$strength, rel$reliability[match(singles, rel$perturbation)],
+    method = "spearman")
+```
+
+Here the threshold is the median reliability of the held-out perturbations;
+on real data a fixed value such as 0.5 is easier to report.
+
+```{r subset}
+threshold <- stats::median(rel$reliability[rel$perturbation %in% s$test])
+res_rel <- pe_subset(res, sig, min_reliability = threshold)
+b_rel <- pe_subset(b, sig, min_reliability = threshold)
+cal_rel <- pe_calibrate(res_rel, b_rel)
+cal_rel[cal_rel$metric == "pearson_delta",
+        c("method", "n", "score", "lower", "upper", "calibrated")]
+```
+
+One caution: `pds` ranks each prediction against the other held-out
+perturbations. An uninformative prediction is furthest from the
+perturbations with the largest effects, so within a subset chosen by effect
+size or reliability its `pds` is no longer 0.5. Interpret `pds` on subsets
+through `pe_calibrate()`, whose lower bound is computed on the same
+perturbations.
+
+## 9. Combinations
+
+The same steps apply to unseen combinations, where the additive baseline is
+the natural reference:
+
+```{r combos}
+s2 <- pe_split(x, type = "unseen_combo", test_frac = 0.25, seed = 42)
+res2 <- pe_evaluate(list(baseline_mean(x, s2), baseline_additive(x, s2)), x)
+pe_calibrate(res2, pe_bounds(x, s2, seed = 1))[
+  , c("method", "metric", "score", "calibrated")]
+```
+
+The additive baseline adds each component's change from control, and each of
+those changes contains the common shift, so a pair receives the shift twice.
+When systematic variation is strong this costs the additive baseline on
+`mse`, while its correlation-based scores and `pds` stay high. This is one
+more reason to read several metrics, each against its calibrated bounds.
+
+## 10. A reporting checklist
+
+When reporting a perturbation model evaluated with `pertEvalR`:
+
+1. report `pe_signal()` for each dataset (systematic fraction, median
+   reliability);
+2. include the no-change and training-mean baselines, and the linear or
+   additive baseline for the task;
+3. report calibrated scores next to raw scores;
+4. report paired differences with confidence intervals rather than means
+   alone, pooled over several random splits;
+5. when most perturbations are unreliable, report results for reliable
+   perturbations separately.
+
+## Session information
+
+```{r session}
+sessionInfo()
+```

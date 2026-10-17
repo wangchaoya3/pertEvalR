@@ -18,7 +18,9 @@ test_that("pe_subset output calibrates against subset bounds", {
   b <- pe_bounds(x, s, top_n = 10, seed = 1)
   keep <- s$test[1:2]
   cal <- pe_calibrate(pe_subset(res, keep), pe_subset(b, keep))
-  expect_true(all(cal$n == 2))
+  # metrics the mean baseline cannot score (NA) have n = 0
+  expect_true(all(cal$n[!is.na(cal$score)] == 2))
+  expect_true(any(!is.na(cal$score)))
   # settings survive, so a mismatch is still caught
   b20 <- pe_bounds(x, s, top_n = 20, seed = 1)
   expect_error(pe_calibrate(pe_subset(res, keep), pe_subset(b20, keep)),

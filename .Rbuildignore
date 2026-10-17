@@ -5,3 +5,5 @@
 ^\.github$
 ^CONTRIBUTING\.md$
 ^analysis$
+^doc$
+^Meta$
