@@ -1,3 +1,27 @@
+# pertEvalR 0.1.0
+
+First release, accompanying the manuscript submitted to PeerJ.
+
+* Data: `pe_data()`, `as_pe_data()` (matrix, SingleCellExperiment, Seurat v5),
+  `pe_pseudobulk()`, `pe_truth()`, `pe_simulate()`.
+* Diagnostics: `pe_signal()` (systematic variation, effect size, effective
+  genes, split-half reliability).
+* Splits: `pe_split()` (unseen single perturbations, unseen combinations).
+* Baselines: `baseline_control()`, `baseline_mean()`, `baseline_additive()`,
+  `baseline_linear()`; `pe_prediction()` for external models.
+* Metrics: `pe_evaluate()`, `pe_summary()`.
+* Statistics: `pe_compare()`.
+* Calibration: `pe_bounds()`, `pe_calibrate()`, `pe_meta_metrics()`.
+* Stratification: `pe_subset()`.
+* Vignette covering the full workflow; 288 unit tests.
+
+# pertEvalR 0.0.0.9008
+
+* New `pe_meta_metrics()`: dynamic range fraction (Miller et al. 2026) and
+  bound discrimination score (Vollenweider and Buehlmann 2026) for every
+  metric, computed from `pe_bounds()`, to judge whether a metric can separate
+  informative from uninformative predictions on a dataset.
+
 # pertEvalR 0.0.0.9007
 
 * New vignette "Evaluating perturbation response predictions with pertEvalR"

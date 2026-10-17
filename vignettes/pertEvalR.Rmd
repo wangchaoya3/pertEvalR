@@ -209,6 +209,16 @@ cal[cal$metric %in% c("pearson_delta", "pds"),
     c("method", "metric", "score", "lower", "upper", "calibrated")]
 ```
 
+Before trusting a metric on a dataset, check that it can separate the two
+references at all. `pe_meta_metrics()` reports, for each metric, the dynamic
+range fraction (how much of the metric's ideal range lies between the
+bounds) and the bound discrimination score (how often the replicate beats
+the uninformative baseline; 0.5 = not at all):
+
+```{r meta}
+pe_meta_metrics(b)
+```
+
 A calibrated score near 0 means "no better than ignoring the perturbation";
 near 1 means "as good as measuring the perturbation again". Scores slightly
 above 1 are possible because the replicate bound is estimated.
@@ -245,6 +255,12 @@ cal_rel[cal_rel$metric == "pearson_delta",
         c("method", "n", "score", "lower", "upper", "calibrated")]
 ```
 
+Restricted to reliable perturbations, the training mean's `pearson_delta`
+drops markedly: much of its overall score came from weak perturbations,
+whose small changes resemble the common shift. The upper bound rises at the
+same time, so the room a model can win grows exactly where the training
+mean is weakest.
+
 One caution: `pds` ranks each prediction against the other held-out
 perturbations. An uninformative prediction is furthest from the
 perturbations with the largest effects, so within a subset chosen by effect
@@ -266,7 +282,8 @@ pe_calibrate(res2, pe_bounds(x, s2, seed = 1))[
 
 The additive baseline adds each component's change from control, and each of
 those changes contains the common shift, so a pair receives the shift twice.
-When systematic variation is strong this costs the additive baseline on
+Here the common shift is small and the additive baseline wins on every
+metric; when systematic variation is strong, the doubled shift costs it on
 `mse`, while its correlation-based scores and `pds` stay high. This is one
 more reason to read several metrics, each against its calibrated bounds.
 

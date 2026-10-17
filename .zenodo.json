@@ -1,0 +1,14 @@
+{
+  "title": "pertEvalR: calibrated, signal-aware evaluation of single-cell perturbation response predictions in R",
+  "upload_type": "software",
+  "version": "0.1.0",
+  "creators": [
+    {"name": "Wang, Chaoya"}
+  ],
+  "license": "MIT",
+  "keywords": ["single-cell", "Perturb-seq", "perturbation prediction", "virtual cell", "benchmarking", "calibration", "R"],
+  "description": "pertEvalR evaluates models that predict transcriptional responses to genetic perturbations from single-cell screens. It diagnoses the signal in a dataset (systematic variation, split-half reliability), provides leakage-free splits and reference baselines, scores predictions per perturbation, compares methods with paired bootstrap intervals and signed-rank tests, calibrates scores between an uninformative lower bound and a technical-replicate upper bound, and restricts evaluation to reliably measured perturbations. This archive contains the R package source and the analysis scripts that reproduce all figures of the accompanying manuscript.",
+  "related_identifiers": [
+    {"identifier": "https://github.com/wangchaoya3/pertEvalR", "relation": "isSupplementTo", "scheme": "url"}
+  ]
+}
