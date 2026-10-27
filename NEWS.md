@@ -1,3 +1,9 @@
+# pertEvalR 0.1.1
+
+* First CRAN submission. No changes to functionality since 0.1.0 (the version
+  archived with the manuscript, doi:10.5281/zenodo.23431903); DESCRIPTION
+  now cites the methods the package builds on.
+
 # pertEvalR 0.1.0
 
 First release, accompanying the manuscript submitted to PeerJ.

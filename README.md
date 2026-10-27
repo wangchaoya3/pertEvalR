@@ -1,7 +1,7 @@
 # pertEvalR
 
 > Calibrated evaluation of single-cell perturbation response predictions in R.
-> **Version 0.1.0.** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23431903.svg)](https://doi.org/10.5281/zenodo.23431903)
+> **Version 0.1.1.** Version 0.1.0, used in the manuscript, is archived at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23431903.svg)](https://doi.org/10.5281/zenodo.23431903)
 
 Models that predict how cells respond to perturbations ("virtual cell" and
 in-silico perturbation models) are increasingly compared using metrics that

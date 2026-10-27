@@ -28,11 +28,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Chaoya Wang \email{wanchaoya3@gmail.com}
+\strong{Maintainer}: Chaoya Wang \email{wanchaoya3@gmail.com} [copyright holder]
 
 Authors:
 \itemize{
-  \item Chaoya Wang \email{wanchaoya3@gmail.com}
+  \item Chaoya Wang \email{wanchaoya3@gmail.com} [copyright holder]
 }
 
 }

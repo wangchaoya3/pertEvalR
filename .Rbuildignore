@@ -9,3 +9,5 @@
 ^Meta$
 ^CITATION\.cff$
 ^\.zenodo\.json$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
